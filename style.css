@@ -1,0 +1,66 @@
+body {
+  font-family: Arial;
+  background: #f4f6f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+body.dark {
+  background: #121212;
+  color: white;
+}
+
+.container {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  width: 330px;
+}
+
+body.dark .container {
+  background: #1e1e1e;
+}
+
+#clickArea {
+  margin: 20px 0;
+  padding: 40px;
+  background: #3498db;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+#clickArea:active {
+  background: #1f6fb2;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  background: #e74c3c;
+  color: white;
+  cursor: pointer;
+}
+
+.mode-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+ol {
+  text-align: left;
+  padding-left: 20px;
+}
