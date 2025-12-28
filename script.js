@@ -15,7 +15,8 @@ function startTest() {
 
   clicks = 0;
   started = true;
-  timeLeft = parseInt(document.getElementById("timeSelect").value);
+ timeLeft = getSelectedTime();
+if (timeLeft === null) return;
 
   document.getElementById("clicks").innerText = 0;
   document.getElementById("time").innerText = timeLeft;
@@ -101,4 +102,5 @@ function getSelectedTime() {
 
   return parseInt(select.value);
 }
+
 
