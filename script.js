@@ -9,63 +9,44 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-/****************************************************/
+/****************************************************
 let clickCount = 0;
+let clickTimes = [];
 let startTime = 0;
 let duration = 0;
-let timer;
-let clickTimes = [];
+let timer = null;
+
+let gameReady = false;
+let gameRunning = false;
 
 const clickArea = document.getElementById("clickArea");
 const result = document.getElementById("result");
-const sound = document.getElementById("clickSound");
+const leaderboardEl = document.getElementById("leaderboard");
+const customInput = document.getElementById("customTime");
+const select = document.getElementById("timeSelect");
+const canvas = document.getElementById("chart");
+const ctx = canvas.getContext("2d");
 
-/* Dark mode */
-function toggleMode() {
-  document.body.classList.toggle("dark");
-  localStorage.setItem("dark", document.body.classList.contains("dark"));
-}
-if (localStorage.getItem("dark") === "true") {
-  document.body.classList.add("dark");
-}
-
-/* Time select */
-document.getElementById("timeSelect").onchange = e => {
-  document.getElementById("customTime").style.display =
-    e.target.value === "custom" ? "block" : "none";
+select.onchange = () => {
+  customInput.hidden = select.value !== "custom";
 };
 
-/* Start */
 function startTest() {
   clickCount = 0;
   clickTimes = [];
-  startTime = 0;
   gameReady = true;
   gameRunning = false;
 
-  const sel = document.getElementById("timeSelect").value;
-  duration = sel === "custom"
-    ? Number(document.getElementById("customTime").value)
-    : Number(sel);
+  duration = select.value === "custom"
+    ? Number(customInput.value)
+    : Number(select.value);
 
   result.innerText = "👉 Click vào ô vuông để bắt đầu";
 }
 
-
-  const sel = document.getElementById("timeSelect").value;
-  duration = sel === "custom"
-    ? Number(document.getElementById("customTime").value)
-    : Number(sel);
-
-  clearTimeout(timer);
-  timer = setTimeout(endTest, duration * 1000);
-}
-
-/* Click */
 clickArea.onclick = e => {
   if (!gameReady) return;
 
-  // 🔥 CLICK ĐẦU TIÊN → BẮT ĐẦU ĐẾM THỜI GIAN
   if (!gameRunning) {
     gameRunning = true;
     startTime = Date.now();
@@ -75,31 +56,24 @@ clickArea.onclick = e => {
   clickCount++;
   clickTimes.push(Date.now());
 
-  // Ripple
   const ripple = document.createElement("span");
   ripple.className = "ripple";
   ripple.style.left = e.offsetX + "px";
   ripple.style.top = e.offsetY + "px";
   clickArea.appendChild(ripple);
   setTimeout(() => ripple.remove(), 600);
-
-  playSound();
 };
 
-  clickCount++;
-  clickTimes.push(Date.now());
+function detectCheat() {
+  if (clickTimes.length < 10) return false;
+  let intervals = [];
+  for (let i = 1; i < clickTimes.length; i++) {
+    intervals.push(clickTimes[i] - clickTimes[i - 1]);
+  }
+  const avg = intervals.reduce((a,b)=>a+b)/intervals.length;
+  return avg < 20;
+}
 
-  const ripple = document.createElement("span");
-  ripple.className = "ripple";
-  ripple.style.left = e.offsetX + "px";
-  ripple.style.top = e.offsetY + "px";
-  clickArea.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 600);
-
-  playSound();
-};
-
-/* End */
 function endTest() {
   gameReady = false;
   gameRunning = false;
@@ -107,78 +81,45 @@ function endTest() {
   const cps = clickCount / duration;
 
   if (detectCheat()) {
-    alert("🚫 Phát hiện auto click!");
+    result.innerText = "🚫 Auto click bị phát hiện";
     return;
   }
 
-  const rank = getRank(cps);
-  result.innerText = `CPS: ${cps.toFixed(2)} | Rank: ${rank}`;
-  showRank(rank);
-  applyRankTheme(rank);
-  saveProfile(cps, rank);
-  uploadScore(cps);
+  result.innerText = `🔥 CPS: ${cps.toFixed(2)}`;
+  saveScore(cps);
+  drawChart();
 }
 
-  const rank = getRank(cps);
-  result.innerText = `CPS: ${cps.toFixed(2)} | Rank: ${rank}`;
-  showRank(rank);
-  applyRankTheme(rank);
-  saveProfile(cps, rank);
-  uploadScore(cps);
+function saveScore(cps) {
+  const scores = JSON.parse(localStorage.getItem("scores") || "[]");
+  scores.push(cps);
+  scores.sort((a,b)=>b-a);
+  localStorage.setItem("scores", JSON.stringify(scores.slice(0,10)));
+  renderLeaderboard();
 }
 
-/* Rank */
-function getRank(cps) {
-  if (cps < 5) return "Bronze";
-  if (cps < 7) return "Silver";
-  if (cps < 9) return "Gold";
-  return "Diamond";
-}
-function applyRankTheme(rank) {
-  document.body.classList.remove("bronze","silver","gold","diamond");
-  document.body.classList.add(rank.toLowerCase());
-}
-function showRank(rank) {
-  const d = document.createElement("div");
-  d.className = "rank-popup";
-  d.innerText = "🏆 " + rank;
-  document.body.appendChild(d);
-  setTimeout(()=>d.remove(),2000);
-}
-
-/* Sound */
-function playSound() {
-  sound.currentTime = 0;
-  sound.play();
-}
-
-/* Profile */
-function saveProfile(cps, rank) {
-  const name = document.getElementById("playerName").value || "Anonymous";
-  document.getElementById("profile").innerHTML =
-    `👑 ${name}<br>CPS: ${cps.toFixed(2)}<br>Rank: ${rank}`;
-}
-
-/* Firebase upload */
-function uploadScore(cps) {
-  const name = document.getElementById("playerName").value || "Anonymous";
-  db.collection("scores").add({
-    name,
-    cps,
-    time: Date.now()
+function renderLeaderboard() {
+  const scores = JSON.parse(localStorage.getItem("scores") || "[]");
+  leaderboardEl.innerHTML = "";
+  scores.forEach(s => {
+    const li = document.createElement("li");
+    li.innerText = s.toFixed(2);
+    leaderboardEl.appendChild(li);
   });
 }
 
-/* Anti-cheat */
-function detectCheat() {
-  if (clickTimes.length < 15) return false;
-  let intervals = [];
-  for (let i=1;i<clickTimes.length;i++)
-    intervals.push(clickTimes[i]-clickTimes[i-1]);
-  let avg = intervals.reduce((a,b)=>a+b)/intervals.length;
-  let variance = intervals.reduce((a,b)=>a+(b-avg)**2,0)/intervals.length;
-  return variance < 5;
+function drawChart() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.beginPath();
+  clickTimes.forEach((t,i) => {
+    const x = (i / clickTimes.length) * canvas.width;
+    const y = canvas.height - i * 2;
+    ctx.lineTo(x,y);
+  });
+  ctx.stroke();
 }
+
+renderLeaderboard();
 
 
 
