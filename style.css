@@ -11,7 +11,7 @@ body {
   background: white;
   padding: 25px;
   border-radius: 10px;
-  width: 350px;
+  width: 360px;
   text-align: center;
 }
 
@@ -34,7 +34,7 @@ button {
   height: 180px;
   background: #3498db;
   color: white;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
   border-radius: 10px;
   cursor: pointer;
@@ -53,6 +53,7 @@ ol {
   text-align: left;
   padding-left: 20px;
 }
+
 canvas {
   margin-top: 10px;
   border: 1px solid #ccc;
