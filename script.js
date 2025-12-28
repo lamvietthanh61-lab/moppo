@@ -1,64 +1,57 @@
+/******** FIREBASE CONFIG – THAY BẰNG CỦA BẠN ********/
+const firebaseConfig = {
+  apiKey: "AIzaSyBvkk0gXU0uNDUMUsOXo0_NFAmXpNZY89A",
+  authDomain: "cps-test-d52b4.firebaseapp.com",
+  projectId: "cps-test-d52b4",
+  storageBucket: "cps-test-d52b4.firebasestorage.app",
+  messagingSenderId: "315180666784",
+  appId: "1:315180666784:web:c18455a6c4a9d3c8561ec5"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+/****************************************************/
+
 let clickCount = 0;
 let startTime = 0;
 let duration = 0;
-let interval;
+let timer;
 let clickTimes = [];
-let cpsHistory = [];
 
 const clickArea = document.getElementById("clickArea");
 const result = document.getElementById("result");
 const sound = document.getElementById("clickSound");
 
-/* ===== DARK MODE ===== */
+/* Dark mode */
 function toggleMode() {
   document.body.classList.toggle("dark");
-  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+  localStorage.setItem("dark", document.body.classList.contains("dark"));
 }
-if (localStorage.getItem("darkMode") === "true") {
+if (localStorage.getItem("dark") === "true") {
   document.body.classList.add("dark");
 }
 
-/* ===== THEME ===== */
-function setTheme(t) {
-  document.body.className = "";
-  if (t) {
-    document.body.classList.add(t);
-    localStorage.setItem("theme", t);
-  } else localStorage.removeItem("theme");
-}
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme) document.body.classList.add(savedTheme);
-
-/* ===== CUSTOM COLOR ===== */
-function setCustomColor(c) {
-  document.body.style.background = c;
-  localStorage.setItem("customColor", c);
-}
-if (localStorage.getItem("customColor")) {
-  document.body.style.background = localStorage.getItem("customColor");
-}
-
-/* ===== START ===== */
+/* Time select */
 document.getElementById("timeSelect").onchange = e => {
   document.getElementById("customTime").style.display =
     e.target.value === "custom" ? "block" : "none";
 };
 
+/* Start */
 function startTest() {
   clickCount = 0;
   clickTimes = [];
-  cpsHistory = [];
   startTime = Date.now();
 
   const sel = document.getElementById("timeSelect").value;
   duration = sel === "custom"
-    ? +document.getElementById("customTime").value
-    : +sel;
+    ? Number(document.getElementById("customTime").value)
+    : Number(sel);
 
-  interval = setTimeout(endTest, duration * 1000);
+  clearTimeout(timer);
+  timer = setTimeout(endTest, duration * 1000);
 }
 
-/* ===== CLICK ===== */
+/* Click */
 clickArea.onclick = e => {
   if (!startTime) return;
 
@@ -72,13 +65,10 @@ clickArea.onclick = e => {
   clickArea.appendChild(ripple);
   setTimeout(() => ripple.remove(), 600);
 
-  const cps = clickCount / ((Date.now() - startTime) / 1000);
-  cpsHistory.push(cps);
-  playClickSound(cps);
-  dynamicSpeedTheme(cps);
+  playSound();
 };
 
-/* ===== END ===== */
+/* End */
 function endTest() {
   startTime = 0;
   const cps = clickCount / duration;
@@ -91,51 +81,54 @@ function endTest() {
   const rank = getRank(cps);
   result.innerText = `CPS: ${cps.toFixed(2)} | Rank: ${rank}`;
   showRank(rank);
-  applyRankTheme(cps);
+  applyRankTheme(rank);
   saveProfile(cps, rank);
+  uploadScore(cps);
 }
 
-/* ===== RANK ===== */
+/* Rank */
 function getRank(cps) {
   if (cps < 5) return "Bronze";
   if (cps < 7) return "Silver";
   if (cps < 9) return "Gold";
   return "Diamond";
 }
-function applyRankTheme(cps) {
+function applyRankTheme(rank) {
   document.body.classList.remove("bronze","silver","gold","diamond");
-  document.body.classList.add(getRank(cps).toLowerCase());
+  document.body.classList.add(rank.toLowerCase());
 }
-function showRank(r) {
+function showRank(rank) {
   const d = document.createElement("div");
   d.className = "rank-popup";
-  d.innerText = "🏆 " + r;
+  d.innerText = "🏆 " + rank;
   document.body.appendChild(d);
   setTimeout(()=>d.remove(),2000);
 }
 
-/* ===== SOUND ===== */
-function playClickSound(cps) {
-  sound.playbackRate = Math.min(2, 0.8 + cps / 10);
+/* Sound */
+function playSound() {
   sound.currentTime = 0;
   sound.play();
 }
 
-/* ===== SPEED THEME ===== */
-function dynamicSpeedTheme(cps) {
-  document.body.style.background =
-    `hsl(${Math.min(120, cps*15)},70%,30%)`;
-}
-
-/* ===== PROFILE ===== */
+/* Profile */
 function saveProfile(cps, rank) {
   const name = document.getElementById("playerName").value || "Anonymous";
-  localStorage.setItem("profile", JSON.stringify({name,cps,rank}));
   document.getElementById("profile").innerHTML =
     `👑 ${name}<br>CPS: ${cps.toFixed(2)}<br>Rank: ${rank}`;
 }
 
-/* ===== ANTI CHEAT ===== */
+/* Firebase upload */
+function uploadScore(cps) {
+  const name = document.getElementById("playerName").value || "Anonymous";
+  db.collection("scores").add({
+    name,
+    cps,
+    time: Date.now()
+  });
+}
+
+/* Anti-cheat */
 function detectCheat() {
   if (clickTimes.length < 15) return false;
   let intervals = [];
@@ -145,6 +138,7 @@ function detectCheat() {
   let variance = intervals.reduce((a,b)=>a+(b-avg)**2,0)/intervals.length;
   return variance < 5;
 }
+
 
 
 
