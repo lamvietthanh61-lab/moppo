@@ -25,6 +25,7 @@ body {
   user-select: none;
   position: relative;
   overflow: hidden;
+  font-size: 24px;
 }
 
 .mode-btn {
@@ -45,16 +46,14 @@ body {
   to { transform: scale(4); opacity: 0; }
 }
 
-/* Dark */
+/* Dark mode */
 body.dark {
   background: #121212;
   color: #eee;
 }
-body.dark .container { background: #1e1e1e; }
-
-/* Themes */
-body.blue { background:#e3f2fd; color:#0d47a1; }
-body.purple { background:#f3e5f5; color:#4a148c; }
+body.dark .container {
+  background: #1e1e1e;
+}
 
 /* Rank themes */
 body.bronze { background:#4e342e; color:#fbe9e7; }
@@ -69,6 +68,7 @@ body.diamond { background:#0d47a1; color:#e3f2fd; }
   left: 50%;
   transform: translate(-50%,-50%) scale(0);
   background: gold;
+  color: black;
   padding: 20px 40px;
   font-size: 28px;
   border-radius: 12px;
