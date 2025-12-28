@@ -55,13 +55,13 @@ timeSelect.onchange = () => {
   customTime.style.display = timeSelect.value === "custom" ? "block" : "none";
 };
 
-/* ===== Start ===== */
 startBtn.onclick = () => {
   const name = document.getElementById("playerName").value.trim();
   if (!name) return alert("Nhập tên!");
 
   clicks = 0;
   started = true;
+  hasStartedTimer = false;
   lastClick = 0;
 
   duration = timeSelect.value === "custom"
@@ -71,12 +71,12 @@ startBtn.onclick = () => {
   if (!duration || duration <= 0) return alert("Thời gian không hợp lệ");
 
   clickArea.classList.remove("hidden");
-  info.textContent = "Bắt đầu click!";
+  info.textContent = "Bấm vào ô vuông để bắt đầu!";
   rankInfo.textContent = "";
-  clearTimeout(timer);
 
-  timer = setTimeout(endGame, duration * 1000);
+  clearTimeout(timer);
 };
+
 
 /* ===== Click ===== */
 clickArea.onclick = () => {
@@ -86,8 +86,16 @@ clickArea.onclick = () => {
   if (now - lastClick < 20) return; // anti-cheat
   lastClick = now;
 
+  // 👉 CLICK ĐẦU TIÊN → BẮT ĐẦU TÍNH GIỜ
+  if (!hasStartedTimer) {
+    hasStartedTimer = true;
+    info.textContent = "Đang đo CPS...";
+    timer = setTimeout(endGame, duration * 1000);
+  }
+
   clicks++;
 };
+
 
 /* ===== End ===== */
 function endGame() {
@@ -146,6 +154,7 @@ function loadLeaderboard() {
 }
 
 loadLeaderboard();
+
 
 
 
