@@ -40,7 +40,18 @@ document.getElementById("timeSelect").onchange = e => {
 function startTest() {
   clickCount = 0;
   clickTimes = [];
-  startTime = Date.now();
+  startTime = 0;
+  gameReady = true;
+  gameRunning = false;
+
+  const sel = document.getElementById("timeSelect").value;
+  duration = sel === "custom"
+    ? Number(document.getElementById("customTime").value)
+    : Number(sel);
+
+  result.innerText = "👉 Click vào ô vuông để bắt đầu";
+}
+
 
   const sel = document.getElementById("timeSelect").value;
   duration = sel === "custom"
@@ -138,6 +149,7 @@ function detectCheat() {
   let variance = intervals.reduce((a,b)=>a+(b-avg)**2,0)/intervals.length;
   return variance < 5;
 }
+
 
 
 
