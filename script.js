@@ -9,199 +9,155 @@ appId: "1:315180666784:web:c18455a6c4a9d3c8561ec5"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-/* ================= GAME STATE ================= */
-let clickCount = 0;
-let clickTimes = [];
+/* ===== GAME STATE ===== */
+let clicks = 0;
+let started = false;
+let startTime = 0;
 let duration = 0;
-let timer = null;
+let clickTimes = [];
 
-let gameReady = false;
-let gameRunning = false;
-
-/* ================= DOM ================= */
-const clickArea = document.getElementById("clickArea");
-const result = document.getElementById("result");
-const leaderboardEl = document.getElementById("leaderboard");
-const customInput = document.getElementById("customTime");
-const select = document.getElementById("timeSelect");
-const canvas = document.getElementById("chart");
-const ctx = canvas.getContext("2d");
-
-/* ================= SOUND ================= */
-const clickSound = new Audio(
-  "https://assets.mixkit.co/sfx/preview/mixkit-arcade-click-1115.mp3"
-);
-
-/* ================= RANK ================= */
-const rankOrder = ["Beginner", "Normal", "Fast", "Pro", "God"];
-
-function getRank(cps) {
-  if (cps < 4) return "Beginner";
-  if (cps < 6) return "Normal";
-  if (cps < 8) return "Fast";
-  if (cps < 10) return "Pro";
-  return "God";
-}
-
-function applyRankTheme(rank) {
-  document.body.dataset.rank = rank;
-}
-
-/* ================= TIME SELECT ================= */
-select.onchange = () => {
-  customInput.hidden = select.value !== "custom";
+/* ===== TIME SELECT ===== */
+timeSelect.onchange = () => {
+  customTime.style.display = timeSelect.value === "custom" ? "inline" : "none";
 };
 
-/* ================= START ================= */
-function startTest() {
-  clickCount = 0;
+/* ===== START ===== */
+function prepareGame() {
+  clicks = 0;
   clickTimes = [];
-  gameReady = true;
-  gameRunning = false;
+  started = false;
 
-  duration = select.value === "custom"
-    ? Number(customInput.value)
-    : Number(select.value);
-
-  result.innerText = "👉 Click vào ô vuông để bắt đầu";
+  clickArea.style.display = "flex";
+  result.innerText = "👉 Bấm vào ô để bắt đầu!";
+  startBtn.disabled = true;
 }
 
-/* ================= CLICK ================= */
+/* ===== CLICK ===== */
 clickArea.onclick = e => {
-  if (!gameReady) return;
+  rippleEffect(e);
 
-  if (!gameRunning) {
-    gameRunning = true;
-    timer = setTimeout(endTest, duration * 1000);
+  if (!started) {
+    started = true;
+    startTime = Date.now();
+    duration =
+      timeSelect.value === "custom"
+        ? Number(customTime.value) * 1000
+        : Number(timeSelect.value) * 1000;
   }
 
-  clickCount++;
-  clickTimes.push(Date.now());
+  clicks++;
+  recordClick();
 
-  playSound();
-
-  const ripple = document.createElement("span");
-  ripple.className = "ripple";
-  ripple.style.left = e.offsetX + "px";
-  ripple.style.top = e.offsetY + "px";
-  clickArea.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 600);
+  if (Date.now() - startTime >= duration) endGame();
 };
 
-/* ================= ANTI-CHEAT ================= */
-function advancedCheatCheck() {
-  if (clickTimes.length < 15) return false;
+/* ===== END GAME ===== */
+function endGame() {
+  started = false;
+  startBtn.disabled = false;
 
-  let diffs = [];
-  for (let i = 1; i < clickTimes.length; i++) {
-    diffs.push(clickTimes[i] - clickTimes[i - 1]);
-  }
+  const cps = (clicks / (duration / 1000)).toFixed(2);
 
-  const avg = diffs.reduce((a,b)=>a+b) / diffs.length;
-  const variance = diffs.reduce((a,b)=>a+(b-avg)**2,0) / diffs.length;
-
-  return avg < 18 || variance < 5;
-}
-
-/* ================= PROFILE ================= */
-function getProfile(cps) {
-  const name = document.getElementById("playerName").value || "Guest";
-  const rank = getRank(cps);
-  return { name, rank };
-}
-
-/* ================= RANK UP ================= */
-function checkRankUp(newRank) {
-  const oldRank = localStorage.getItem("bestRank") || "Beginner";
-
-  if (rankOrder.indexOf(newRank) > rankOrder.indexOf(oldRank)) {
-    localStorage.setItem("bestRank", newRank);
-    showRankUp(newRank);
-  }
-}
-
-function showRankUp(rank) {
-  const popup = document.getElementById("rankPopup");
-  const text = document.getElementById("rankText");
-
-  text.innerText = rank;
-  popup.classList.remove("hidden");
-
-  setTimeout(() => {
-    popup.classList.add("hidden");
-  }, 2000);
-}
-
-/* ================= END ================= */
-function endTest() {
-  gameReady = false;
-  gameRunning = false;
-
-  const cps = clickCount / duration;
-
-  if (advancedCheatCheck()) {
-    result.innerText = "🚫 Phát hiện auto / macro";
+  if (detectAutoClick()) {
+    alert("🚫 Phát hiện auto click!");
     return;
   }
 
-  const profile = getProfile(cps);
+  result.innerText = `⚡ CPS: ${cps}`;
 
-  applyRankTheme(profile.rank);
-  checkRankUp(profile.rank);
+  const rank = getRank(cps);
+  showRank(rank);
+  applyRankTheme(cps);
 
-  result.innerText =
-    `🔥 CPS: ${cps.toFixed(2)} | Rank: ${profile.rank}`;
+  const name = playerName.value || "Guest";
+  saveProfile(name, cps, rank);
+  submitScore(name, Number(cps));
 
-  uploadScore(cps, profile);
-  drawChart();
+  loadProfile();
+  loadGlobalLeaderboard();
 }
 
-/* ================= FIREBASE ================= */
-function uploadScore(cps, profile) {
-  db.collection("scores").add({
-    name: profile.name,
-    cps: cps,
-    rank: profile.rank,
-    time: firebase.firestore.FieldValue.serverTimestamp()
-  });
+/* ===== RANK ===== */
+function getRank(cps) {
+  if (cps < 5) return "Bronze";
+  if (cps < 7) return "Silver";
+  if (cps < 9) return "Gold";
+  return "Diamond";
 }
 
-function loadOnlineLeaderboard() {
-  db.collection("scores")
+function showRank(rank) {
+  const p = document.createElement("div");
+  p.className = "rank-popup";
+  p.innerText = "🏆 " + rank;
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 2000);
+}
+
+function applyRankTheme(cps) {
+  document.body.className = getRank(cps).toLowerCase();
+}
+
+/* ===== PROFILE ===== */
+function saveProfile(name, cps, rank) {
+  localStorage.setItem("profile", JSON.stringify({ name, cps, rank }));
+}
+
+function loadProfile() {
+  const p = JSON.parse(localStorage.getItem("profile"));
+  if (!p) return;
+  profile.innerHTML = `👤 ${p.name}<br>⚡ ${p.cps} CPS<br>🏆 ${p.rank}`;
+}
+loadProfile();
+
+/* ===== LEADERBOARD ===== */
+async function submitScore(name, cps) {
+  await db.collection("leaderboard").add({ name, cps });
+}
+
+async function loadGlobalLeaderboard() {
+  globalLeaderboard.innerHTML = "";
+  const snap = await db.collection("leaderboard")
     .orderBy("cps", "desc")
     .limit(10)
-    .onSnapshot(snap => {
-      leaderboardEl.innerHTML = "";
-      snap.forEach(doc => {
-        const d = doc.data();
-        const li = document.createElement("li");
-        li.innerText = `${d.name} – ${d.cps.toFixed(2)} CPS`;
-        leaderboardEl.appendChild(li);
-      });
-    });
-}
+    .get();
 
-/* ================= CHART ================= */
-function drawChart() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.beginPath();
-  clickTimes.forEach((t,i) => {
-    const x = (i / clickTimes.length) * canvas.width;
-    const y = canvas.height - i * 3;
-    ctx.lineTo(x,y);
+  let i = 1;
+  snap.forEach(d => {
+    const li = document.createElement("li");
+    li.innerText = `#${i++} ${d.data().name} — ${d.data().cps} CPS`;
+    globalLeaderboard.appendChild(li);
   });
-  ctx.stroke();
+}
+loadGlobalLeaderboard();
+
+/* ===== ANTI CHEAT ===== */
+function recordClick() {
+  clickTimes.push(Date.now());
+  if (clickTimes.length > 30) clickTimes.shift();
 }
 
-/* ================= SOUND ================= */
-function playSound() {
-  clickSound.playbackRate = Math.min(3, 1 + clickCount / 30);
-  clickSound.currentTime = 0;
-  clickSound.play();
+function detectAutoClick() {
+  if (clickTimes.length < 10) return false;
+  const diffs = clickTimes.slice(1).map((t, i) => t - clickTimes[i]);
+  const avg = diffs.reduce((a, b) => a + b) / diffs.length;
+  const variance = diffs.reduce((a, b) => a + (b - avg) ** 2, 0) / diffs.length;
+  return variance < 5;
 }
 
-/* ================= INIT ================= */
-loadOnlineLeaderboard();
+/* ===== EFFECT ===== */
+function rippleEffect(e) {
+  const r = document.createElement("span");
+  r.className = "ripple";
+  r.style.left = e.offsetX + "px";
+  r.style.top = e.offsetY + "px";
+  clickArea.appendChild(r);
+  setTimeout(() => r.remove(), 600);
+}
+
+/* ===== DARK MODE ===== */
+function toggleMode() {
+  document.body.classList.toggle("dark");
+}
 
 
 
