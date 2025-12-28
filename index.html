@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>CPS Test</title>
+  <title>CPS Test PRO</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,26 +12,25 @@
 
   <input id="playerName" placeholder="Nhập tên người chơi">
 
-<select id="timeSelect" onchange="toggleCustomTime()">
-  <option value="1">1 giây</option>
-  <option value="5">5 giây</option>
-  <option value="10" selected>10 giây</option>
-  <option value="15">15 giây</option>
-  <option value="20">20 giây</option>
-  <option value="custom">Tuỳ chỉnh</option>
-</select>
+  <select id="timeSelect" onchange="toggleCustomTime()">
+    <option value="1">1 giây</option>
+    <option value="5">5 giây</option>
+    <option value="10" selected>10 giây</option>
+    <option value="15">15 giây</option>
+    <option value="20">20 giây</option>
+    <option value="custom">Tuỳ chỉnh</option>
+  </select>
 
-<input
-  id="customTime"
-  type="number"
-  min="1"
-  placeholder="Nhập số giây (>=1)"
-  style="display:none"
-/>
+  <input
+    id="customTime"
+    type="number"
+    min="1"
+    placeholder="Nhập số giây (>=1)"
+    style="display:none"
+  >
 
   <button id="startBtn" onclick="startTest()">START</button>
 
-  <!-- KHU CLICK -->
   <div id="clickArea" onclick="registerClick()">
     CLICK HERE
   </div>
@@ -41,12 +40,15 @@
 
   <h2>🏆 TOP 10</h2>
   <ol id="leaderboard"></ol>
+
+  <h2>📊 CPS theo thời gian</h2>
+  <canvas id="chart" width="300" height="150"></canvas>
 </div>
-<h2>📊 CPS theo thời gian</h2>
-<canvas id="chart" width="300" height="150"></canvas>
 
 <script src="script.js"></script>
 </body>
 </html>
+
+
 
 
