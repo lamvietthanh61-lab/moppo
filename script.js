@@ -1,87 +1,81 @@
-let clicks = 0;
-let timeLeft = 0;
-let timer = null;
-let started = false;
-
-let bestCps = localStorage.getItem("bestCps") || 0;
-document.getElementById("bestCps").innerText = bestCps;
-
-let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-renderBoard();
-
-function registerClick() {
-  if (!started) startTest();
-  if (timeLeft > 0) {
-    clicks++;
-    document.getElementById("clicks").innerText = clicks;
-    document.getElementById("clickSound").play();
-  }
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-function startTest() {
-  let name = document.getElementById("player").value.trim();
-  if (!name) {
-    alert("Nhập tên người chơi!");
-    return;
-  }
+.container {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 350px;
+  text-align: center;
+}
 
-  started = true;
-  clicks = 0;
-  timeLeft = parseInt(timeSelect.value);
+input, select, button {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+}
 
-  document.getElementById("clicks").innerText = 0;
-  document.getElementById("time").innerText = timeLeft;
-  document.getElementById("cps").innerText = 0;
+button {
+  background: #27ae60;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
 
-  timer = setInterval(() => {
-    timeLeft--;
-    document.getElementById("time").innerText = timeLeft;
+#clickArea {
+  display: none;
+  margin: 20px 0;
+  height: 180px;
+  background: #3498db;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
 
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      let cps = (clicks / timeSelect.value).toFixed(2);
-      document.getElementById("cps").innerText = cps;
-      saveScore(name, cps);
-      started = false;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#clickArea:active {
+  background: #1f6fb2;
+}
+
+ol {
+  text-align: left;
+  padding-left: 20px;
+}
+function toggleCustomTime() {
+  const select = document.getElementById("timeSelect");
+  const customInput = document.getElementById("customTime");
+
+  customInput.style.display =
+    select.value === "custom" ? "block" : "none";
+}
+
+function getSelectedTime() {
+  const select = document.getElementById("timeSelect");
+
+  if (select.value === "custom") {
+    const custom = parseInt(
+      document.getElementById("customTime").value
+    );
+
+    if (!custom || custom < 1) {
+      alert("Thời gian tuỳ chỉnh phải >= 1 giây");
+      return null;
     }
-  }, 1000);
-}
-
-function saveScore(name, cps) {
-  if (cps > bestCps) {
-    bestCps = cps;
-    localStorage.setItem("bestCps", bestCps);
-    document.getElementById("bestCps").innerText = bestCps;
+    return custom;
   }
 
-  leaderboard.push({ name, cps });
-  leaderboard.sort((a,b)=>b.cps-a.cps);
-  leaderboard = leaderboard.slice(0,5);
-
-  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  renderBoard();
+  return parseInt(select.value);
 }
 
-function renderBoard() {
-  let list = document.getElementById("leaderboard");
-  list.innerHTML = "";
-  leaderboard.forEach(p=>{
-    let li = document.createElement("li");
-    li.innerText = `${p.name} - ${p.cps} CPS`;
-    list.appendChild(li);
-  });
-}
-
-function resetTest() {
-  clearInterval(timer);
-  clicks = 0;
-  timeLeft = 0;
-  started = false;
-  document.getElementById("clicks").innerText = 0;
-  document.getElementById("time").innerText = 0;
-  document.getElementById("cps").innerText = 0;
-}
-
-function toggleMode() {
-  document.body.classList.toggle("dark");
-}
