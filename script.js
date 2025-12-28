@@ -1,168 +1,151 @@
-let clicks = 0;
-let timeLeft = 0;
+let clickCount = 0;
+let startTime = 0;
 let duration = 0;
-let timer = null;
-let started = false;
-let firstClick = false;
+let interval;
+let clickTimes = [];
+let cpsHistory = [];
 
-let clicksPerSecond = [];
-let lastClickTime = 0;
-let cheatDetected = false;
+const clickArea = document.getElementById("clickArea");
+const result = document.getElementById("result");
+const sound = document.getElementById("clickSound");
 
-let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-renderBoard();
-
-/* ===== TIME ===== */
-function toggleCustomTime() {
-  const select = document.getElementById("timeSelect");
-  document.getElementById("customTime").style.display =
-    select.value === "custom" ? "block" : "none";
+/* ===== DARK MODE ===== */
+function toggleMode() {
+  document.body.classList.toggle("dark");
+  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+}
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
 }
 
-function getSelectedTime() {
-  const select = document.getElementById("timeSelect");
+/* ===== THEME ===== */
+function setTheme(t) {
+  document.body.className = "";
+  if (t) {
+    document.body.classList.add(t);
+    localStorage.setItem("theme", t);
+  } else localStorage.removeItem("theme");
+}
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme) document.body.classList.add(savedTheme);
 
-  if (select.value === "custom") {
-    const custom = parseInt(document.getElementById("customTime").value);
-    if (!custom || custom < 1) {
-      alert("Thời gian tuỳ chỉnh phải >= 1 giây");
-      return null;
-    }
-    return custom;
-  }
-
-  return parseInt(select.value);
+/* ===== CUSTOM COLOR ===== */
+function setCustomColor(c) {
+  document.body.style.background = c;
+  localStorage.setItem("customColor", c);
+}
+if (localStorage.getItem("customColor")) {
+  document.body.style.background = localStorage.getItem("customColor");
 }
 
 /* ===== START ===== */
+document.getElementById("timeSelect").onchange = e => {
+  document.getElementById("customTime").style.display =
+    e.target.value === "custom" ? "block" : "none";
+};
+
 function startTest() {
-  const name = document.getElementById("playerName").value.trim();
-  if (!name) {
-    alert("Vui lòng nhập tên người chơi");
-    return;
-  }
+  clickCount = 0;
+  clickTimes = [];
+  cpsHistory = [];
+  startTime = Date.now();
 
-  duration = getSelectedTime();
-  if (!duration) return;
+  const sel = document.getElementById("timeSelect").value;
+  duration = sel === "custom"
+    ? +document.getElementById("customTime").value
+    : +sel;
 
-  clicks = 0;
-  timeLeft = duration;
-  clicksPerSecond = new Array(duration).fill(0);
-  cheatDetected = false;
-  firstClick = false;
-  lastClickTime = 0;
-  started = true;
-
-  document.getElementById("clicks").innerText = 0;
-  document.getElementById("time").innerText = duration;
-  document.getElementById("clickArea").style.display = "flex";
-  document.getElementById("startBtn").disabled = true;
+  interval = setTimeout(endTest, duration * 1000);
 }
 
 /* ===== CLICK ===== */
-function registerClick() {
-  if (!started) return;
+clickArea.onclick = e => {
+  if (!startTime) return;
 
-  const now = Date.now();
+  clickCount++;
+  clickTimes.push(Date.now());
 
-  // 🧠 Anti-cheat
-  if (lastClickTime && now - lastClickTime < 30) {
-    cheatDetected = true;
-  }
-  lastClickTime = now;
+  const ripple = document.createElement("span");
+  ripple.className = "ripple";
+  ripple.style.left = e.offsetX + "px";
+  ripple.style.top = e.offsetY + "px";
+  clickArea.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
 
-  if (!firstClick) {
-    firstClick = true;
-    startTimer();
-  }
-
-  if (timeLeft > 0) {
-    clicks++;
-    document.getElementById("clicks").innerText = clicks;
-
-    const secondIndex = duration - timeLeft;
-    if (secondIndex < clicksPerSecond.length) {
-      clicksPerSecond[secondIndex]++;
-    }
-  }
-}
-
-/* ===== TIMER ===== */
-function startTimer() {
-  timer = setInterval(() => {
-    timeLeft--;
-    document.getElementById("time").innerText = timeLeft;
-
-    if (timeLeft <= 0) {
-      endTest();
-    }
-  }, 1000);
-}
+  const cps = clickCount / ((Date.now() - startTime) / 1000);
+  cpsHistory.push(cps);
+  playClickSound(cps);
+  dynamicSpeedTheme(cps);
+};
 
 /* ===== END ===== */
 function endTest() {
-  clearInterval(timer);
-  started = false;
+  startTime = 0;
+  const cps = clickCount / duration;
 
-  document.getElementById("clickArea").style.display = "none";
-  document.getElementById("startBtn").disabled = false;
-
-  if (cheatDetected) {
-    alert("🚫 Phát hiện auto click!\nBài test bị huỷ.");
+  if (detectCheat()) {
+    alert("🚫 Phát hiện auto click!");
     return;
   }
 
-  const cps = (clicks / duration).toFixed(2);
-  const name = document.getElementById("playerName").value.trim();
-
-  leaderboard.push({ name, cps });
-  leaderboard.sort((a, b) => b.cps - a.cps);
-  leaderboard = leaderboard.slice(0, 10);
-
-  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  renderBoard();
-
-  const rank =
-    leaderboard.findIndex(p => p.name === name && p.cps === cps) + 1;
-
-  alert(
-    `⏱ HẾT GIỜ!\n⚡ CPS: ${cps}\n🏆 Xếp hạng: #${rank}`
-  );
-
-  drawChart();
+  const rank = getRank(cps);
+  result.innerText = `CPS: ${cps.toFixed(2)} | Rank: ${rank}`;
+  showRank(rank);
+  applyRankTheme(cps);
+  saveProfile(cps, rank);
 }
 
-/* ===== LEADERBOARD ===== */
-function renderBoard() {
-  const list = document.getElementById("leaderboard");
-  list.innerHTML = "";
-  leaderboard.forEach((p, i) => {
-    const li = document.createElement("li");
-    li.innerText = `#${i + 1} ${p.name} - ${p.cps} CPS`;
-    list.appendChild(li);
-  });
+/* ===== RANK ===== */
+function getRank(cps) {
+  if (cps < 5) return "Bronze";
+  if (cps < 7) return "Silver";
+  if (cps < 9) return "Gold";
+  return "Diamond";
+}
+function applyRankTheme(cps) {
+  document.body.classList.remove("bronze","silver","gold","diamond");
+  document.body.classList.add(getRank(cps).toLowerCase());
+}
+function showRank(r) {
+  const d = document.createElement("div");
+  d.className = "rank-popup";
+  d.innerText = "🏆 " + r;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),2000);
 }
 
-/* ===== CHART ===== */
-function drawChart() {
-  const canvas = document.getElementById("chart");
-  const ctx = canvas.getContext("2d");
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const max = Math.max(...clicksPerSecond, 1);
-  const barWidth = canvas.width / clicksPerSecond.length;
-
-  clicksPerSecond.forEach((value, i) => {
-    const height = (value / max) * canvas.height;
-    ctx.fillStyle = "#3498db";
-    ctx.fillRect(
-      i * barWidth,
-      canvas.height - height,
-      barWidth - 2,
-      height
-    );
-  });
+/* ===== SOUND ===== */
+function playClickSound(cps) {
+  sound.playbackRate = Math.min(2, 0.8 + cps / 10);
+  sound.currentTime = 0;
+  sound.play();
 }
+
+/* ===== SPEED THEME ===== */
+function dynamicSpeedTheme(cps) {
+  document.body.style.background =
+    `hsl(${Math.min(120, cps*15)},70%,30%)`;
+}
+
+/* ===== PROFILE ===== */
+function saveProfile(cps, rank) {
+  const name = document.getElementById("playerName").value || "Anonymous";
+  localStorage.setItem("profile", JSON.stringify({name,cps,rank}));
+  document.getElementById("profile").innerHTML =
+    `👑 ${name}<br>CPS: ${cps.toFixed(2)}<br>Rank: ${rank}`;
+}
+
+/* ===== ANTI CHEAT ===== */
+function detectCheat() {
+  if (clickTimes.length < 15) return false;
+  let intervals = [];
+  for (let i=1;i<clickTimes.length;i++)
+    intervals.push(clickTimes[i]-clickTimes[i-1]);
+  let avg = intervals.reduce((a,b)=>a+b)/intervals.length;
+  let variance = intervals.reduce((a,b)=>a+(b-avg)**2,0)/intervals.length;
+  return variance < 5;
+}
+
+
 
 
