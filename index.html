@@ -21,24 +21,12 @@
   </select>
   <input id="customTime" type="number" placeholder="Giây" style="display:none">
 
-  <select id="themeSelect" onchange="setTheme(this.value)">
-    <option value="">🌗 System</option>
-    <option value="light">☀ Light</option>
-    <option value="dark">🌙 Dark</option>
-    <option value="blue">🔵 Blue</option>
-    <option value="purple">🟣 Purple</option>
-  </select>
-
-  <input type="color" id="customColor" onchange="setCustomColor(this.value)">
-
   <button onclick="startTest()">Start</button>
 
-  <div id="clickArea">CLICK HERE</div>
+  <div id="clickArea">CLICK</div>
 
   <p id="result"></p>
   <div id="profile"></div>
-
-  <canvas id="chart" width="300" height="150"></canvas>
 </div>
 
 <audio id="clickSound" src="click.mp3"></audio>
@@ -50,6 +38,7 @@
 <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
