@@ -43,7 +43,7 @@ function endTest() {
   clearInterval(timer);
   started = false;
 
-  let duration = parseInt(document.getElementById("timeSelect").value);
+  let duration = getSelectedTime();
   let cps = (clicks / duration).toFixed(2);
 
   let name = document.getElementById("playerName").value.trim();
@@ -102,5 +102,6 @@ function getSelectedTime() {
 
   return parseInt(select.value);
 }
+
 
 
