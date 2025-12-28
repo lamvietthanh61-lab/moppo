@@ -1,112 +1,65 @@
 body {
-  font-family: Arial;
-  background: #f4f4f4;
-  text-align: center;
-  transition: 0.4s;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #222;
 }
 
 .container {
+  width: 360px;
+  margin: 40px auto;
   background: white;
   padding: 20px;
-  max-width: 500px;
-  margin: auto;
-  border-radius: 10px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-button, input, select {
-  padding: 8px;
-  margin: 6px;
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
 }
 
-/* ===== START BUTTON ===== */
 #startBtn {
-  font-size: 26px;
-  padding: 15px 40px;
-  border-radius: 50px;
-  border: none;
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  font-size: 22px;
+  padding: 14px;
+  background: linear-gradient(45deg,#ff9800,#ff5722);
   color: white;
-  font-weight: bold;
+  border: none;
+  border-radius: 30px;
   cursor: pointer;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: 0.2s;
 }
 
 #startBtn:hover {
   transform: scale(1.08);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.4);
 }
 
-#startBtn:active {
-  transform: scale(0.95);
-}
-
-/* ===== CLICK AREA ===== */
 #clickArea {
-  margin: 20px auto;
-  width: 300px;
-  height: 200px;
-  background: #3498db;
+  margin-top: 20px;
+  height: 180px;
+  border-radius: 18px;
+  background: linear-gradient(135deg,#42a5f5,#1e88e5);
   color: white;
-  font-size: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 28px;
+  line-height: 180px;
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
+  user-select: none;
 }
 
-/* Ripple effect */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.7);
-  transform: scale(0);
-  animation: ripple 0.6s linear;
+.hidden { display: none; }
+
+.rank-up {
+  animation: pop 0.6s ease;
+  color: #4caf50;
+  font-weight: bold;
 }
 
-@keyframes ripple {
-  to { transform: scale(4); opacity: 0; }
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-/* Dark mode */
-body.dark {
-  background: #121212;
-  color: #eee;
-}
-
-body.dark .container {
-  background: #1e1e1e;
-}
-
-/* Rank themes */
-body.bronze { background: #4e342e; color: white; }
-body.silver { background: #37474f; color: white; }
-body.gold { background: #f9a825; }
-body.diamond { background: #0d47a1; color: white; }
-
-/* Rank popup */
-.rank-popup {
-  position: fixed;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: black;
-  color: white;
-  padding: 30px;
-  font-size: 30px;
-  border-radius: 12px;
-  z-index: 999;
-}
-
-/* Dark mode button */
-.mode-btn {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-}
 
 
 
