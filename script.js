@@ -1,57 +1,80 @@
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+let clicks = 0;
+let timeLeft = 0;
+let timer = null;
+let started = false;
+
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+renderBoard();
+
+function startTest() {
+  let name = document.getElementById("playerName").value.trim();
+  if (!name) {
+    alert("Vui lòng nhập tên!");
+    return;
+  }
+
+  clicks = 0;
+  started = true;
+  timeLeft = parseInt(document.getElementById("timeSelect").value);
+
+  document.getElementById("clicks").innerText = 0;
+  document.getElementById("time").innerText = timeLeft;
+  document.getElementById("clickArea").style.display = "flex";
+  document.getElementById("startBtn").disabled = true;
+
+  timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("time").innerText = timeLeft;
+
+    if (timeLeft <= 0) {
+      endTest();
+    }
+  }, 1000);
 }
 
-.container {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  width: 350px;
-  text-align: center;
+function registerClick() {
+  if (!started) return;
+  clicks++;
+  document.getElementById("clicks").innerText = clicks;
 }
 
-input, select, button {
-  width: 100%;
-  padding: 8px;
-  margin: 6px 0;
+function endTest() {
+  clearInterval(timer);
+  started = false;
+
+  let duration = parseInt(document.getElementById("timeSelect").value);
+  let cps = (clicks / duration).toFixed(2);
+
+  let name = document.getElementById("playerName").value.trim();
+
+  leaderboard.push({ name, cps });
+  leaderboard.sort((a, b) => b.cps - a.cps);
+  leaderboard = leaderboard.slice(0, 10);
+
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+  renderBoard();
+
+  let rank = leaderboard.findIndex(p => p.name === name && p.cps === cps) + 1;
+
+  alert(
+    `⏱ HẾT GIỜ!\n` +
+    `⚡ CPS: ${cps}\n` +
+    `🏆 Xếp hạng: #${rank}`
+  );
+
+  document.getElementById("clickArea").style.display = "none";
+  document.getElementById("startBtn").disabled = false;
 }
 
-button {
-  background: #27ae60;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
+function renderBoard() {
+  let list = document.getElementById("leaderboard");
+  list.innerHTML = "";
 
-#clickArea {
-  display: none;
-  margin: 20px 0;
-  height: 180px;
-  background: #3498db;
-  color: white;
-  font-size: 24px;
-  font-weight: bold;
-  border-radius: 10px;
-  cursor: pointer;
-  user-select: none;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#clickArea:active {
-  background: #1f6fb2;
-}
-
-ol {
-  text-align: left;
-  padding-left: 20px;
+  leaderboard.forEach((p, i) => {
+    let li = document.createElement("li");
+    li.innerText = `#${i + 1} ${p.name} - ${p.cps} CPS`;
+    list.appendChild(li);
+  });
 }
 function toggleCustomTime() {
   const select = document.getElementById("timeSelect");
