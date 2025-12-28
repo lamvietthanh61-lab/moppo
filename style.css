@@ -13,24 +13,30 @@
 }
 
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   text-align: center;
 }
 
-#clickArea {
-  width: 300px;
-  height: 200px;
-  background: var(--box);
-  margin: 20px auto;
-  line-height: 200px;
-  font-size: 24px;
-  user-select: none;
-  position: relative;
-  cursor: pointer;
+.controls {
+  margin: 10px;
 }
 
+#clickArea {
+  width: 320px;
+  height: 220px;
+  background: var(--box);
+  margin: 20px auto;
+  line-height: 220px;
+  font-size: 24px;
+  user-select: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+}
+
+/* Ripple click */
 .ripple {
   position: absolute;
   width: 20px;
@@ -48,6 +54,50 @@ body {
     opacity: 0;
   }
 }
+
+/* 🎨 Theme theo rank */
+body[data-rank="Beginner"] { --box:#aaa; }
+body[data-rank="Normal"]   { --box:#4caf50; }
+body[data-rank="Fast"]     { --box:#2196f3; }
+body[data-rank="Pro"]      { --box:#9c27b0; }
+body[data-rank="God"]      { --box:#ff9800; }
+
+/* 🏆 Rank up animation */
+.rank-popup {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.2);
+  background: linear-gradient(135deg, gold, orange);
+  color: #000;
+  padding: 25px 40px;
+  border-radius: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  box-shadow: 0 0 40px gold;
+  animation: rankUp 1.2s ease forwards;
+  z-index: 999;
+}
+
+.rank-popup.hidden {
+  display: none;
+}
+
+@keyframes rankUp {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+
 
 
 
