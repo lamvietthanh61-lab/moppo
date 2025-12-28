@@ -10,7 +10,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 /****************************************************/
-
 let clickCount = 0;
 let startTime = 0;
 let duration = 0;
@@ -64,7 +63,28 @@ function startTest() {
 
 /* Click */
 clickArea.onclick = e => {
-  if (!startTime) return;
+  if (!gameReady) return;
+
+  // 🔥 CLICK ĐẦU TIÊN → BẮT ĐẦU ĐẾM THỜI GIAN
+  if (!gameRunning) {
+    gameRunning = true;
+    startTime = Date.now();
+    timer = setTimeout(endTest, duration * 1000);
+  }
+
+  clickCount++;
+  clickTimes.push(Date.now());
+
+  // Ripple
+  const ripple = document.createElement("span");
+  ripple.className = "ripple";
+  ripple.style.left = e.offsetX + "px";
+  ripple.style.top = e.offsetY + "px";
+  clickArea.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+
+  playSound();
+};
 
   clickCount++;
   clickTimes.push(Date.now());
@@ -81,13 +101,23 @@ clickArea.onclick = e => {
 
 /* End */
 function endTest() {
-  startTime = 0;
+  gameReady = false;
+  gameRunning = false;
+
   const cps = clickCount / duration;
 
   if (detectCheat()) {
     alert("🚫 Phát hiện auto click!");
     return;
   }
+
+  const rank = getRank(cps);
+  result.innerText = `CPS: ${cps.toFixed(2)} | Rank: ${rank}`;
+  showRank(rank);
+  applyRankTheme(rank);
+  saveProfile(cps, rank);
+  uploadScore(cps);
+}
 
   const rank = getRank(cps);
   result.innerText = `CPS: ${cps.toFixed(2)} | Rank: ${rank}`;
@@ -149,6 +179,7 @@ function detectCheat() {
   let variance = intervals.reduce((a,b)=>a+(b-avg)**2,0)/intervals.length;
   return variance < 5;
 }
+
 
 
 
