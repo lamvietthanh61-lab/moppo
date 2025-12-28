@@ -5,7 +5,6 @@ let timer = null;
 let started = false;
 let firstClick = false;
 
-let clickTimes = [];
 let clicksPerSecond = [];
 let lastClickTime = 0;
 let cheatDetected = false;
@@ -14,16 +13,24 @@ let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 renderBoard();
 
 /* ===== TIME ===== */
+function toggleCustomTime() {
+  const select = document.getElementById("timeSelect");
+  document.getElementById("customTime").style.display =
+    select.value === "custom" ? "block" : "none";
+}
+
 function getSelectedTime() {
   const select = document.getElementById("timeSelect");
+
   if (select.value === "custom") {
     const custom = parseInt(document.getElementById("customTime").value);
     if (!custom || custom < 1) {
-      alert("Thời gian phải >= 1 giây");
+      alert("Thời gian tuỳ chỉnh phải >= 1 giây");
       return null;
     }
     return custom;
   }
+
   return parseInt(select.value);
 }
 
@@ -31,7 +38,7 @@ function getSelectedTime() {
 function startTest() {
   const name = document.getElementById("playerName").value.trim();
   if (!name) {
-    alert("Nhập tên người chơi!");
+    alert("Vui lòng nhập tên người chơi");
     return;
   }
 
@@ -41,9 +48,9 @@ function startTest() {
   clicks = 0;
   timeLeft = duration;
   clicksPerSecond = new Array(duration).fill(0);
-  clickTimes = [];
   cheatDetected = false;
   firstClick = false;
+  lastClickTime = 0;
   started = true;
 
   document.getElementById("clicks").innerText = 0;
@@ -58,7 +65,7 @@ function registerClick() {
 
   const now = Date.now();
 
-  /* 🧠 ANTI CHEAT */
+  // 🧠 Anti-cheat
   if (lastClickTime && now - lastClickTime < 30) {
     cheatDetected = true;
   }
@@ -157,4 +164,5 @@ function drawChart() {
     );
   });
 }
+
 
