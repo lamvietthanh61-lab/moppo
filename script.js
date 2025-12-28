@@ -16,6 +16,7 @@ let duration;
 let timer;
 let lastClick = 0;
 let lastRank = "";
+let hasStartedTimer = false;
 
 /* ===== Elements ===== */
 const startBtn = document.getElementById("startBtn");
@@ -145,6 +146,7 @@ function loadLeaderboard() {
 }
 
 loadLeaderboard();
+
 
 
 
