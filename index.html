@@ -6,38 +6,31 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h1>⚡ CPS TEST</h1>
 
-<button class="mode-btn" onclick="toggleMode()">🌙</button>
+  <div class="controls">
+    <select id="timeSelect">
+      <option value="1">1 giây</option>
+      <option value="20">20 giây</option>
+      <option value="custom">Tuỳ chỉnh</option>
+    </select>
+    <input id="customTime" type="number" min="1" placeholder="Giây" hidden>
+    <button onclick="startTest()">Start</button>
+  </div>
 
-<div class="container">
-  <h1>CPS Test</h1>
+  <div id="clickArea">CLICK HERE</div>
 
-  <input id="playerName" placeholder="Tên người chơi">
+  <p id="result">Bấm Start để chuẩn bị</p>
 
-  <select id="timeSelect">
-    <option value="1">1 giây</option>
-    <option value="20">20 giây</option>
-    <option value="custom">Tuỳ chỉnh</option>
-  </select>
-  <input id="customTime" type="number" placeholder="Giây" style="display:none">
+  <canvas id="chart" width="400" height="200"></canvas>
 
-  <button onclick="startTest()">Start</button>
+  <h2>🏆 Top 10</h2>
+  <ol id="leaderboard"></ol>
 
-  <div id="clickArea">CLICK</div>
-
-  <p id="result"></p>
-  <div id="profile"></div>
-</div>
-
-<audio id="clickSound" src="click.mp3"></audio>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
