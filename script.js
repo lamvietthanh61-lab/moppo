@@ -1,15 +1,3 @@
-/******** FIREBASE CONFIG – THAY BẰNG CỦA BẠN ********/
-const firebaseConfig = {
-  apiKey: "AIzaSyBvkk0gXU0uNDUMUsOXo0_NFAmXpNZY89A",
-  authDomain: "cps-test-d52b4.firebaseapp.com",
-  projectId: "cps-test-d52b4",
-  storageBucket: "cps-test-d52b4.firebasestorage.app",
-  messagingSenderId: "315180666784",
-  appId: "1:315180666784:web:c18455a6c4a9d3c8561ec5"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-/****************************************************
 let clickCount = 0;
 let clickTimes = [];
 let startTime = 0;
@@ -120,6 +108,7 @@ function drawChart() {
 }
 
 renderLeaderboard();
+
 
 
 
