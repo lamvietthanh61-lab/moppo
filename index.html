@@ -2,48 +2,50 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>CPS Test PRO</title>
+  <title>CPS Test</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<button class="mode-btn" onclick="toggleMode()">🌙</button>
+
 <div class="container">
-  <h1>🖱 CPS Test</h1>
+  <h1>CPS Test</h1>
 
-  <input id="playerName" placeholder="Nhập tên người chơi">
+  <input id="playerName" placeholder="Tên người chơi">
 
-  <select id="timeSelect" onchange="toggleCustomTime()">
+  <select id="timeSelect">
     <option value="1">1 giây</option>
-    <option value="5">5 giây</option>
-    <option value="10" selected>10 giây</option>
-    <option value="15">15 giây</option>
     <option value="20">20 giây</option>
     <option value="custom">Tuỳ chỉnh</option>
   </select>
+  <input id="customTime" type="number" placeholder="Giây" style="display:none">
 
-  <input
-    id="customTime"
-    type="number"
-    min="1"
-    placeholder="Nhập số giây (>=1)"
-    style="display:none"
-  >
+  <select id="themeSelect" onchange="setTheme(this.value)">
+    <option value="">🌗 System</option>
+    <option value="light">☀ Light</option>
+    <option value="dark">🌙 Dark</option>
+    <option value="blue">🔵 Blue</option>
+    <option value="purple">🟣 Purple</option>
+  </select>
 
-  <button id="startBtn" onclick="startTest()">START</button>
+  <input type="color" id="customColor" onchange="setCustomColor(this.value)">
 
-  <div id="clickArea" onclick="registerClick()">
-    CLICK HERE
-  </div>
+  <button onclick="startTest()">Start</button>
 
-  <p>⏱ Thời gian: <span id="time">0</span>s</p>
-  <p>🧮 Click: <span id="clicks">0</span></p>
+  <div id="clickArea">CLICK HERE</div>
 
-  <h2>🏆 TOP 10</h2>
-  <ol id="leaderboard"></ol>
+  <p id="result"></p>
+  <div id="profile"></div>
 
-  <h2>📊 CPS theo thời gian</h2>
   <canvas id="chart" width="300" height="150"></canvas>
 </div>
+
+<audio id="clickSound" src="click.mp3"></audio>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script src="script.js"></script>
 </body>
