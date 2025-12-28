@@ -1,82 +1,53 @@
-body {
-  font-family: Arial;
-  background: #f4f4f4;
-  color: #222;
-  transition: 0.4s;
+:root {
+  --bg: #ffffff;
+  --text: #000;
+  --box: #e0e0e0;
 }
 
-.container {
-  max-width: 400px;
-  margin: auto;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --text: #fff;
+    --box: #333;
+  }
+}
+
+body {
+  font-family: Arial;
+  background: var(--bg);
+  color: var(--text);
+  text-align: center;
 }
 
 #clickArea {
-  margin-top: 20px;
-  height: 150px;
-  background: #2196f3;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  width: 300px;
+  height: 200px;
+  background: var(--box);
+  margin: 20px auto;
+  line-height: 200px;
+  font-size: 24px;
   user-select: none;
   position: relative;
-  overflow: hidden;
-  font-size: 24px;
+  cursor: pointer;
 }
 
-.mode-btn {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-}
-
-/* Ripple */
 .ripple {
   position: absolute;
+  width: 20px;
+  height: 20px;
+  background: rgba(0,0,0,0.3);
   border-radius: 50%;
-  background: rgba(255,255,255,0.7);
-  transform: scale(0);
-  animation: ripple 0.6s linear;
+  transform: translate(-50%, -50%);
+  animation: ripple 0.6s ease-out;
 }
+
 @keyframes ripple {
-  to { transform: scale(4); opacity: 0; }
+  to {
+    width: 120px;
+    height: 120px;
+    opacity: 0;
+  }
 }
 
-/* Dark mode */
-body.dark {
-  background: #121212;
-  color: #eee;
-}
-body.dark .container {
-  background: #1e1e1e;
-}
-
-/* Rank themes */
-body.bronze { background:#4e342e; color:#fbe9e7; }
-body.silver { background:#37474f; color:#eceff1; }
-body.gold { background:#f9a825; color:#212121; }
-body.diamond { background:#0d47a1; color:#e3f2fd; }
-
-/* Rank popup */
-.rank-popup {
-  position: fixed;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%,-50%) scale(0);
-  background: gold;
-  color: black;
-  padding: 20px 40px;
-  font-size: 28px;
-  border-radius: 12px;
-  animation: rankUp 1.2s forwards;
-}
-@keyframes rankUp {
-  50% { transform: translate(-50%,-50%) scale(1.2); }
-  100% { transform: translate(-50%,-50%) scale(1); }
-}
 
 
